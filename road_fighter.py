@@ -2,7 +2,6 @@ import pygame
 import os
 import random
 
-
 CAR = pygame.image.load("Car.png")
 BACKGROUND = pygame.image.load("Road.png")
 
@@ -17,7 +16,7 @@ class Game:
 
     def __init__(self):
         pygame.init()
-
+        self.score = 0
         self.window = pygame.display.set_mode((500, 800))
 
         pygame.display.set_caption("Racing AI")
@@ -27,9 +26,9 @@ class Game:
     def run(self):
         car = Car(250, 650, self.window)
         track = Track(50, self.window)
-        bg_cars = [OtherCars(BG_CARS[0], self.window)]
+        bg_cars = [BackgroundCars(BG_CARS[0], self.window)]
 
-        pygame.time.set_timer(pygame.USEREVENT + 1, 400)
+        pygame.time.set_timer(pygame.USEREVENT + 1, 500)
 
         while self.execute:
             keys = pygame.key.get_pressed()
@@ -40,10 +39,15 @@ class Game:
                     self.execute = False
 
                 if event.type == pygame.USEREVENT + 1:
-                    bg_cars.append(
-                        OtherCars(BG_CARS[random.randint(0, 5)], self.window)
-                    )
-                    self.RANDOM_CARS_COUNT += 1
+                    new_car = BackgroundCars(BG_CARS[random.randint(0, 5)], self.window)
+                    will_append = True
+                    for cars in bg_cars:
+                        if cars.collide(new_car):
+                            will_append = False
+                            break
+                    if will_append:
+                        bg_cars.append(new_car)
+                        self.RANDOM_CARS_COUNT += 1
 
                 for c in bg_cars:
                     if c.y >= 800:
@@ -51,7 +55,7 @@ class Game:
                         self.RANDOM_CARS_COUNT -= 1
 
             track.draw()
-            track.move()
+            self.score = track.move(self.score)
             car.draw()
 
             for i in random.sample(
@@ -81,14 +85,15 @@ class Game:
                 self.execute = False
 
             self.clock.tick(60)
+            print(self.score)
             pygame.display.update()
         pygame.quit()
 
 
-class OtherCars:
+class BackgroundCars:
     def __init__(self, car, window):
         self.x = random.randint(50, 350)
-        self.y = random.randint(-400, -100)
+        self.y = random.randint(-500, -100)
         self.vel = 5
         self.width = 100
         self.height = 100
@@ -100,15 +105,16 @@ class OtherCars:
 
     def draw(self):
         self.window.blit(self.car, (self.x, self.y))
-        # pygame.draw.rect(self.window, (255, 0, 0), self.box(), 2)
 
     def collide(self, gaddi):
         playerMask = gaddi.mask()
-        enemyMask = pygame.mask.from_surface(self.car)
+        carMask = self.mask()
 
-        collision = playerMask.overlap(enemyMask, (self.x - gaddi.x, self.y - gaddi.y))
-        # print(collision)
+        collision = playerMask.overlap(carMask, (self.x - gaddi.x, self.y - gaddi.y))
         return bool(collision)
+
+    def mask(self):
+        return pygame.mask.from_surface(self.car)
 
 
 class Track:
@@ -119,7 +125,7 @@ class Track:
         self.vel = 10
         self.window = window
 
-    def move(self):
+    def move(self, score):
         self.y1 += self.vel
         self.y2 += self.vel
 
@@ -128,6 +134,8 @@ class Track:
 
         if self.y2 - 800 > 0:
             self.y2 = self.y1 - 800
+
+        return score + 1
 
     def draw(self):
         self.window.blit(BACKGROUND, (self.x, self.y1))
@@ -138,7 +146,7 @@ class Car:
     def __init__(self, x, y, window):
         self.x = x
         self.y = y
-        self.vel = 3
+        self.vel = 6
         self.width = 44
         self.height = 100
         self.window = window
@@ -149,18 +157,6 @@ class Car:
 
     def draw(self):
         self.window.blit(self.car, (self.x, self.y))
-        # pygame.draw.rect(self.window, (0, 255, 255), self.box(), 2)
-
-    # def box(self):
-    #     return (self.x + self.width // 4, self.y, self.width // 2, self.height)
-
-    # def rectpoints(self):
-    #     return (
-    #         (self.x, self.y),
-    #         (self.x + self.width, self.y),
-    #         (self.x + self.width, self.y + self.height),
-    #         (self.x, self.y + self.height),
-    #     )
 
     def mask(self):
         return pygame.mask.from_surface(self.car)
