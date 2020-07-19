@@ -3,7 +3,7 @@ import os
 import random
 
 
-CAR = pygame.transform.scale(pygame.image.load("Car.png"), (100, 100))
+CAR = pygame.image.load("Car.png")
 BACKGROUND = pygame.image.load("Road.png")
 
 BG_CARS = [
@@ -34,6 +34,7 @@ class Game:
         while self.execute:
             keys = pygame.key.get_pressed()
             self.window.fill((0, 255, 0))
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or keys[pygame.K_0]:
                     self.execute = False
@@ -59,10 +60,10 @@ class Game:
                 bg_cars[i].draw()
                 bg_cars[i].move()
 
-            if keys[pygame.K_LEFT] and car.x - car.vel >= 50:
+            if keys[pygame.K_LEFT]:
                 car.x -= car.vel
 
-            if keys[pygame.K_RIGHT] and car.x + car.vel + car.width <= 450:
+            if keys[pygame.K_RIGHT]:
                 car.x += car.vel
 
             if keys[pygame.K_UP] and car.y + car.vel >= 250:
@@ -75,6 +76,9 @@ class Game:
                 if cars.collide(car):
                     print("Collision")
                     self.execute = False
+
+            if car.x < 50 or car.x + car.width > 450:
+                self.execute = False
 
             self.clock.tick(60)
             pygame.display.update()
@@ -135,7 +139,7 @@ class Car:
         self.x = x
         self.y = y
         self.vel = 3
-        self.width = 100
+        self.width = 44
         self.height = 100
         self.window = window
         self.car = CAR
