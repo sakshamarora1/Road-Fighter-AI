@@ -9,10 +9,10 @@ BG_CARS = [
     pygame.transform.scale(pygame.image.load("cars/" + vehicle), (100, 100))
     for vehicle in os.listdir("cars")
 ]
-
+MAX_CARS = 5
 
 class Game:
-    RANDOM_CARS_COUNT = 1
+    RANDOM_CARS_COUNT = 0
 
     def __init__(self):
         pygame.init()
@@ -23,12 +23,33 @@ class Game:
         self.clock = pygame.time.Clock()
         self.execute = True
 
+    def cleanUpCars(self, bg_cars):
+        for c in bg_cars:
+            if c.y >= 800:
+                bg_cars.remove(c)
+                self.RANDOM_CARS_COUNT -= 1
+        return bg_cars
+
+    def createNewCars(self, bg_cars):
+        extra = len([car for car in bg_cars if not car.onScreen()])
+        while self.RANDOM_CARS_COUNT != MAX_CARS + extra:
+            new_car = BackgroundCars(BG_CARS[random.randint(0, 5)], self.window)
+            will_append = True
+            for cars in bg_cars:
+                if cars.collide(new_car) or self.RANDOM_CARS_COUNT == MAX_CARS + extra:
+                    will_append = False
+                    break
+            if will_append:
+                bg_cars.append(new_car)
+                self.RANDOM_CARS_COUNT += 1
+        
+        return bg_cars
+
     def run(self):
         car = Car(250, 650, self.window)
         track = Track(50, self.window)
-        bg_cars = [BackgroundCars(BG_CARS[0], self.window)]
-
-        pygame.time.set_timer(pygame.USEREVENT + 1, 500)
+        bg_cars = []
+        self.createNewCars(bg_cars)
 
         while self.execute:
             keys = pygame.key.get_pressed()
@@ -38,21 +59,8 @@ class Game:
                 if event.type == pygame.QUIT or keys[pygame.K_0]:
                     self.execute = False
 
-                if event.type == pygame.USEREVENT + 1:
-                    new_car = BackgroundCars(BG_CARS[random.randint(0, 5)], self.window)
-                    will_append = True
-                    for cars in bg_cars:
-                        if cars.collide(new_car):
-                            will_append = False
-                            break
-                    if will_append:
-                        bg_cars.append(new_car)
-                        self.RANDOM_CARS_COUNT += 1
-
-                for c in bg_cars:
-                    if c.y >= 800:
-                        bg_cars.remove(c)
-                        self.RANDOM_CARS_COUNT -= 1
+            bg_cars = self.cleanUpCars(bg_cars)
+            bg_cars = self.createNewCars(bg_cars)
 
             track.draw()
             self.score = track.move(self.score)
@@ -78,22 +86,29 @@ class Game:
 
             for cars in bg_cars:
                 if cars.collide(car):
-                    print("Collision")
                     self.execute = False
 
             if car.x < 50 or car.x + car.width > 450:
                 self.execute = False
 
             self.clock.tick(60)
-            print(self.score)
+            font = pygame.font.Font('freesansbold.ttf', 32) 
+            text = font.render(" Score: " + str(self.score) + " ", True, (255, 0, 0), (0, 0, 0)) 
+            textRect = text.get_rect()
+            textRect.center = (400, 50)
+            self.window.blit(text, textRect) 
+
             pygame.display.update()
+        
+        print("Score:", self.score)
+        pygame.time.wait(100)
         pygame.quit()
 
 
 class BackgroundCars:
     def __init__(self, car, window):
         self.x = random.randint(50, 350)
-        self.y = random.randint(-500, -100)
+        self.y = random.randint(-400, -100)
         self.vel = 5
         self.width = 100
         self.height = 100
@@ -115,6 +130,14 @@ class BackgroundCars:
 
     def mask(self):
         return pygame.mask.from_surface(self.car)
+    
+    def onScreen(self):
+        if self.y <= 650:
+            return True
+        return False
+
+    def __str__(self):
+        return f"y: {self.y} , onScreen: {self.onScreen()}"
 
 
 class Track:
