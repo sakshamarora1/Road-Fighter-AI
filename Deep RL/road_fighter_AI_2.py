@@ -27,7 +27,7 @@ class Game:
         self.execute = True
 
         self.car = Car(250, 650, self.window)
-        self.agent = DQNAgent(inputs=6, n_actions=2)
+        self.agent = DQNAgent(inputs=4, n_actions=2)
         self.episode_durations = []
 
         self.update_agent = pygame.USEREVENT + 1
@@ -59,19 +59,19 @@ class Game:
     def get_state(self, bg_cars):
         state = []
         for car in bg_cars:
-            state.extend([(car.x - self.car.x) / 500, (car.y - self.car.y) / 800])
-        state.extend([(self.car.x - 50) / 500, (450 - self.car.x) / 500])
-
+            state.append(car.x / 500)
+        state.append(self.car.x / 500)
+        state.append((bg_cars[0].y - bg_cars[1].y) / 800)
         return state
 
     def run_episodes(self, num_episodes=20):
         track = Track(50, self.window)
         bg_cars = []
+        avg = 0
 
         for i_episode in range(num_episodes):
             self.createNewCars(bg_cars)
             self.car = Car(250, 650, self.window)
-            state = self.get_state(bg_cars)
             self.execute = True
 
             while self.execute:
@@ -111,16 +111,22 @@ class Game:
                     bg_cars[i].move()
 
                 if self.car.ok:
+                    state = self.get_state(bg_cars)
+                    self.car.score += (
+                        self.car.x if self.car.x < 250 else 500 - self.car.x
+                    ) // 50
                     self.car.score += 2
                     self.car.draw()
 
                     for cars in bg_cars:
+                        if self.car.y + 100 < cars.y:
+                            self.car.score += 50
                         if cars.collide(self.car):
                             self.car.ok = False
-                            self.car.score -= 20
+                            self.car.score //= 2
 
                     if self.car.x < 50 or self.car.x + self.car.width > 450:
-                        self.car.score -= 20
+                        self.car.score //= 2
                         self.car.ok = False
 
                     action = self.agent.select_action(state)
@@ -132,15 +138,13 @@ class Game:
                         pass
 
                     reward = self.car.score
-
                     next_state = self.get_state(bg_cars) if self.car.ok else None
                     self.agent.memory.push(state, action, reward, next_state)
-                    state = next_state
 
                     self.agent.learn()
 
                 self.display_text()
-                self.clock.tick(60)
+                # self.clock.tick(60)
                 pygame.display.update()
 
             while bg_cars:
@@ -152,9 +156,11 @@ class Game:
 
             if i_episode % 10 == 0:
                 self.agent.target_brain.load_state_dict(self.agent.brain.state_dict())
+                print("\n\nAverage of last 10 episodes: ", avg / 10, "\n")
+                avg = 0
 
             print("\nScore for episode", i_episode + 1, " ----- ", self.car.score)
-            # print(len(self.agent.memory))
+            avg += self.car.score
 
         pygame.time.wait(100)
         pygame.quit()
@@ -194,4 +200,4 @@ class Track:
 
 if __name__ == "__main__":
     game = Game()
-    game.run_episodes(50)
+    game.run_episodes(500)

@@ -18,7 +18,11 @@ class ReplayMemory(object):
         """Saves a transition."""
         if len(self.memory) < self.capacity:
             self.memory.append(None)
-        self.memory[self.position] = Transition(*args)
+        if (
+            self.memory[self.position] is None
+            or args[2] > self.memory[self.position].reward
+        ):
+            self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
 
     def sample(self, batch_size):
@@ -37,7 +41,7 @@ class DeepQNetwork(nn.Module):
         hidden_layer_list = []
         for i in range(len(hiddenNums) - 1):
             hidden_layer_list.extend(
-                [nn.ReLU(), nn.Linear(hiddenNums[i], hiddenNums[i + 1])]
+                [nn.Linear(hiddenNums[i], hiddenNums[i + 1]), nn.ReLU()]
             )
         self.hidden_layers = nn.Sequential(*hidden_layer_list)
 
