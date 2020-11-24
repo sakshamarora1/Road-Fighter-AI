@@ -37,7 +37,7 @@ class Game:
         print(f"Max Score from Generation-{self.generations} : {self.generation_score}")
         print(f"Max Score from all generations: {self.max}\n")
         if len(self.deadcars) > 0:
-            self.cars = newCars(self.deadcars)
+            self.cars = newCars(self.deadcars, self.option)
         else:
             for _ in range(TOTAL_CARS):
                 self.cars.append(Car(250, 650, self.window))
@@ -45,7 +45,8 @@ class Game:
         self.generations += 1
         self.generation_score = 0
 
-    def run(self):
+    def run(self, option):
+        self.option = option
         track = Track(50, self.window)
         bg_cars = []
 
@@ -173,6 +174,19 @@ class Track:
 
 
 if __name__ == "__main__":
+    print(
+        """
+        Road Fighter AI using NEAT Algorithm. Choose parent selection function - 
+            
+            1. Fitness proportionate probability function.
+            2. Direct rank base selection.
+
+        """
+    )
+    option = 0
+    while option not in {1,2}:
+        option = int(input("Choose an option: "))
+
     game = Game()
-    game.run()
+    game.run(option)
 
