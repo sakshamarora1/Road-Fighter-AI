@@ -19,7 +19,7 @@ def newCars(cars, option):
     new_cars = []
     for _ in range(len(cars)):
         new_cars.append(Car(250, 650, cars[0].window, brain=top_brain))
-    
+
     return new_cars
 
 
@@ -40,4 +40,3 @@ def selection(cars, option):
             if cars[i].fitness > cars[maxx].fitness:
                 maxx = i
         return cars[maxx].brain
-

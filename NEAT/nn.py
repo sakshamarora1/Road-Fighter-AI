@@ -1,7 +1,14 @@
 import numpy as np
 import dill
 import copy
-from activation import sigmoid
+
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+
+def dsigmoid(x):
+    return sigmoid(x) * (1 - sigmoid(x))
 
 
 class NeuralNetwork:
@@ -48,4 +55,3 @@ class NeuralNetwork:
 
     def copy(self):
         return copy.copy(self)
-

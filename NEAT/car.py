@@ -1,15 +1,16 @@
+import os
 import pygame
 from nn import NeuralNetwork
 import random
+
+
+CAR = pygame.image.load(os.path.abspath("..") + "/Car.png")
 
 
 def mutate(x):
     if random.random() < 0.1:
         return random.gauss(0, 1) * 0.5 + x
     return x
-
-
-CAR = pygame.image.load("Car.png")
 
 
 class Car:

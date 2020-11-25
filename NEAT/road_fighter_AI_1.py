@@ -6,10 +6,12 @@ from car import Car
 
 TOTAL_CARS = 100
 
-BACKGROUND = pygame.image.load("Road.png")
+BACKGROUND = pygame.image.load(os.path.abspath("..") + "/Road.png")
 BG_CARS = [
-    pygame.transform.scale(pygame.image.load("cars/" + vehicle), (100, 100))
-    for vehicle in os.listdir("cars")
+    pygame.transform.scale(
+        pygame.image.load(os.path.abspath("..") + "/cars/" + vehicle), (100, 100)
+    )
+    for vehicle in os.listdir(os.path.abspath("..") + "/cars")
 ]
 
 
@@ -183,10 +185,9 @@ if __name__ == "__main__":
 
         """
     )
-    option = 0
-    while option not in {1,2}:
-        option = int(input("Choose an option: "))
+    choice = 0
+    while choice not in {1, 2}:
+        choice = int(input("Choose an option: "))
 
     game = Game()
-    game.run(option)
-
+    game.run(choice)
