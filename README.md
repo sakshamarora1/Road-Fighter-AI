@@ -1,4 +1,7 @@
-## AI that teaches itself to play Road Fighter(remade) using Reinforcement Learning 
+# Road Fighter AI
+
+AI that teaches itself to play Road Fighter(remade) using various Reinforcement Learning Techniques.
+The program is made using the pygame library.
 
 To play the game:
 
@@ -12,13 +15,25 @@ Install the requirements:
 pip install -r requirements.txt
 ```
 
-To run the AI:
+## NEAT algorithm:
+
+### To run the AI using NEAT Algorithm
 
 ``` console
+cd NEAT
 python3 road_fighter_AI_1.py
 ```
 
-# About
+## Deep Q Learning:
 
-The program is made using the pygame library. The AI runs on a custom made neural network with input
-layer having 4 input nodes, 1 hidden containing 8 nodes and the output layer containing 2 nodes (i.e. left or right).
+### To run the AI using Deep Q Learning
+
+``` console
+cd Deep\ RL
+python3 road_fighter_AI_2.py
+```
+
+
+## Next Target
+
+- Proximal Policy Optimization

@@ -11,6 +11,7 @@ BG_CARS = [
 ]
 MAX_CARS = 5
 
+
 class Game:
     RANDOM_CARS_COUNT = 0
 
@@ -42,7 +43,7 @@ class Game:
             if will_append:
                 bg_cars.append(new_car)
                 self.RANDOM_CARS_COUNT += 1
-        
+
         return bg_cars
 
     def run(self):
@@ -92,14 +93,16 @@ class Game:
                 self.execute = False
 
             self.clock.tick(60)
-            font = pygame.font.Font('freesansbold.ttf', 32) 
-            text = font.render(" Score: " + str(self.score) + " ", True, (255, 0, 0), (0, 0, 0)) 
+            font = pygame.font.Font("freesansbold.ttf", 32)
+            text = font.render(
+                " Score: " + str(self.score) + " ", True, (255, 0, 0), (0, 0, 0)
+            )
             textRect = text.get_rect()
             textRect.center = (400, 50)
-            self.window.blit(text, textRect) 
+            self.window.blit(text, textRect)
 
             pygame.display.update()
-        
+
         print("Score:", self.score)
         pygame.time.wait(100)
         pygame.quit()
@@ -130,7 +133,7 @@ class BackgroundCars:
 
     def mask(self):
         return pygame.mask.from_surface(self.car)
-    
+
     def onScreen(self):
         if self.y <= 650:
             return True
@@ -188,4 +191,3 @@ class Car:
 if __name__ == "__main__":
     game = Game()
     game.run()
-
