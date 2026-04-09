@@ -18,7 +18,9 @@ class Game:
     def __init__(self):
         pygame.init()
         self.score = 0
-        self.window = pygame.display.set_mode((500, 800))
+        self.height = 600
+        self.width = 500
+        self.window = pygame.display.set_mode((self.width, self.height))
 
         pygame.display.set_caption("Racing AI")
         self.clock = pygame.time.Clock()
@@ -26,7 +28,7 @@ class Game:
 
     def cleanUpCars(self, bg_cars):
         for c in bg_cars:
-            if c.y >= 800:
+            if c.y >= self.height:
                 bg_cars.remove(c)
                 self.RANDOM_CARS_COUNT -= 1
         return bg_cars
@@ -34,7 +36,7 @@ class Game:
     def createNewCars(self, bg_cars):
         extra = len([car for car in bg_cars if not car.onScreen()])
         while self.RANDOM_CARS_COUNT != MAX_CARS + extra:
-            new_car = BackgroundCars(BG_CARS[random.randint(0, 5)], self.window)
+            new_car = BackgroundCars(BG_CARS[random.randint(0, 5)], self.window, self.height)
             will_append = True
             for cars in bg_cars:
                 if cars.collide(new_car) or self.RANDOM_CARS_COUNT == MAX_CARS + extra:
@@ -47,8 +49,8 @@ class Game:
         return bg_cars
 
     def run(self):
-        car = Car(250, 650, self.window)
-        track = Track(50, self.window)
+        car = Car(250, self.height - 100, self.window)
+        track = Track(50, self.window, self.height)
         bg_cars = []
         self.createNewCars(bg_cars)
 
@@ -82,11 +84,13 @@ class Game:
             if keys[pygame.K_UP] and car.y + car.vel >= 250:
                 car.y -= car.vel
 
-            if keys[pygame.K_DOWN] and car.y + car.vel + car.height <= 750:
+            if keys[pygame.K_DOWN] and car.y + car.vel + car.height <= self.height - 50:
                 car.y += car.vel
 
             for cars in bg_cars:
                 if cars.collide(car):
+                    print("Collision detected")
+                    print(car.x, car.y)
                     self.execute = False
 
             if car.x < 50 or car.x + car.width > 450:
@@ -104,18 +108,19 @@ class Game:
             pygame.display.update()
 
         print("Score:", self.score)
-        pygame.time.wait(100)
+        pygame.time.wait(1000)
         pygame.quit()
 
 
 class BackgroundCars:
-    def __init__(self, car, window):
+    def __init__(self, car, window, height):
         self.x = random.randint(50, 350)
         self.y = random.randint(-400, -100)
         self.vel = 5
         self.width = 100
         self.height = 100
         self.window = window
+        self.window_height = height
         self.car = car
 
     def move(self):
@@ -135,7 +140,7 @@ class BackgroundCars:
         return pygame.mask.from_surface(self.car)
 
     def onScreen(self):
-        if self.y <= 650:
+        if self.y <= self.window_height - 250:
             return True
         return False
 
@@ -144,10 +149,11 @@ class BackgroundCars:
 
 
 class Track:
-    def __init__(self, x, window):
+    def __init__(self, x, window, height):
         self.x = x
         self.y1 = 0
-        self.y2 = 800
+        self.height = height
+        self.y2 = self.height
         self.vel = 10
         self.window = window
 
@@ -155,11 +161,11 @@ class Track:
         self.y1 += self.vel
         self.y2 += self.vel
 
-        if self.y1 - 800 > 0:
-            self.y1 = self.y2 - 800
+        if self.y1 - self.height > 0:
+            self.y1 = self.y2 - self.height
 
-        if self.y2 - 800 > 0:
-            self.y2 = self.y1 - 800
+        if self.y2 - self.height > 0:
+            self.y2 = self.y1 - self.height
 
         return score + 1
 
