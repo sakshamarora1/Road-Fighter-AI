@@ -66,12 +66,29 @@ class Game:
             show_help = True
             alive = True
 
+            touch_active = False
+            touch_x, touch_y = None, None
+            touch_frame_multiplier = 1
             while alive:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return
                     if event.type == pygame.KEYDOWN and show_help:
                         show_help = False
+
+                    if event.type == pygame.FINGERDOWN:
+                        touch_active = True
+                        touch_x = event.x * self.width
+                        touch_y = event.y * self.height
+                        if show_help:
+                            show_help = False
+                    elif event.type == pygame.FINGERMOTION:
+                        touch_x = event.x * self.width
+                        touch_y = event.y * self.height
+                    elif event.type == pygame.FINGERUP:
+                        touch_active = False
+                        touch_x, touch_y = None, None
+                        touch_frame_multiplier = 1
 
                 keys = pygame.key.get_pressed()
                 self.window.fill((0, 255, 0))
@@ -99,6 +116,19 @@ class Game:
                     if keys[pygame.K_DOWN] and car.y + car.vel + car.height <= self.height - 50:
                         car.y += car.vel
 
+                    if touch_active:
+                        touch_frame_multiplier += 0.0005
+
+                    if touch_active and touch_x is not None:
+                        if touch_x < car.x:
+                            car.x -= car.vel * touch_frame_multiplier
+                        elif touch_x > car.x + car.width:
+                            car.x += car.vel * touch_frame_multiplier
+                        if touch_y < car.y:
+                            car.y -= car.vel * touch_frame_multiplier
+                        elif touch_y > car.y + car.height:
+                            car.y += car.vel * touch_frame_multiplier
+
                     for cars in bg_cars:
                         if cars.collide(car):
                             alive = False
@@ -117,7 +147,7 @@ class Game:
                     overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
                     overlay.fill((0, 0, 0, 150))
                     self.window.blit(overlay, (0, 0))
-                    for i, line in enumerate(["Arrow Keys to Move", "Press any key to start"]):
+                    for i, line in enumerate(["Arrow keys or touch to move", "Press any key or tap to start"]):
                         t = small_font.render(line, True, (255, 255, 255))
                         r = t.get_rect(center=(self.width // 2, self.height // 2 - 20 + i * 40))
                         self.window.blit(t, r)
@@ -132,7 +162,9 @@ class Game:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         return
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    if event.type == pygame.KEYDOWN:
+                        game_over = False
+                    if event.type == pygame.FINGERDOWN:
                         game_over = False
 
                 self.window.fill((0, 0, 0))
@@ -143,7 +175,7 @@ class Game:
                 scoreboard = font.render(f"Score: {self.score}", True, (255, 255, 255))
                 self.window.blit(scoreboard, scoreboard.get_rect(center=(self.width // 2, self.height // 2)))
 
-                hint = small_font.render("Press SPACE to restart", True, (200, 200, 200))
+                hint = small_font.render("Press any key or tap to restart", True, (200, 200, 200))
                 self.window.blit(hint, hint.get_rect(center=(self.width // 2, self.height // 2 + 50)))
 
                 self.clock.tick(60)
