@@ -1,0 +1,1 @@
+pygbag --disable-sound-format-error web
