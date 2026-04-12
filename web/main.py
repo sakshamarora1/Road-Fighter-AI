@@ -15,10 +15,11 @@ class Game:
     def __init__(self):
         pygame.init()
         self.score = 0
+        self.high_score = 0
         self.height = 600
         self.width = 500
         self.window = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("Racing AI")
+        pygame.display.set_caption("Road Fighter")
 
         self.car_img = pygame.image.load("Car.png").convert_alpha()
         self.background = pygame.image.load("Road.png").convert_alpha()
@@ -53,8 +54,9 @@ class Game:
         return bg_cars
 
     async def run(self):
-        font = pygame.font.SysFont("sans", 32)
-        small_font = pygame.font.SysFont("sans", 22)
+        font = pygame.font.Font(None, 36)
+        small_font = pygame.font.Font(None, 24)
+        score_num_font = pygame.font.Font(None, 42)
 
         while True:
             self.score = 0
@@ -113,7 +115,7 @@ class Game:
                         car.x += car.vel
                     if keys[pygame.K_UP] and car.y + car.vel >= 250:
                         car.y -= car.vel
-                    if keys[pygame.K_DOWN] and car.y + car.vel + car.height <= self.height - 50:
+                    if keys[pygame.K_DOWN] and car.y + car.vel + car.height <= self.height:
                         car.y += car.vel
 
                     if touch_active:
@@ -136,12 +138,32 @@ class Game:
                     if car.x < 50 or car.x + car.width > 450:
                         alive = False
 
-                score_text = font.render(
-                    " Score: " + str(self.score) + " ", True, (255, 0, 0), (0, 0, 0)
-                )
-                score_rect = score_text.get_rect()
-                score_rect.center = (400, 50)
-                self.window.blit(score_text, score_rect)
+                self.high_score = max(self.high_score, self.score)
+
+                pad_x, pad_y = 14, 8
+
+                hs_text = score_num_font.render(str(self.high_score), True, (255, 215, 0))
+                hs_label = small_font.render("BEST", True, (180, 180, 180))
+                hs_box_w = max(hs_text.get_width(), hs_label.get_width()) + pad_x * 2
+                hs_box_h = hs_label.get_height() + hs_text.get_height() + pad_y * 2 + 2
+                hs_bg = pygame.Surface((hs_box_w, hs_box_h), pygame.SRCALPHA)
+                hs_bg.fill((0, 0, 0, 160))
+                hs_x = 50
+                self.window.blit(hs_bg, (hs_x, 0))
+                self.window.blit(hs_label, (hs_x + (hs_box_w - hs_label.get_width()) // 2, pad_y))
+                self.window.blit(hs_text, (hs_x + (hs_box_w - hs_text.get_width()) // 2, pad_y + hs_label.get_height() + 2))
+
+                score_text = score_num_font.render(str(self.score), True, (64, 255, 196))
+           
+                label_text = small_font.render("SCORE", True, (180, 180, 180))
+                box_w = max(score_text.get_width(), label_text.get_width()) + pad_x * 2
+                box_h = label_text.get_height() + score_text.get_height() + pad_y * 2 + 2
+                score_bg = pygame.Surface((box_w, box_h), pygame.SRCALPHA)
+                score_bg.fill((0, 0, 0, 160))
+                score_x = self.width - box_w - 50
+                self.window.blit(score_bg, (score_x, 0))
+                self.window.blit(label_text, (score_x + (box_w - label_text.get_width()) // 2, pad_y))
+                self.window.blit(score_text, (score_x + (box_w - score_text.get_width()) // 2, pad_y + label_text.get_height() + 2))
 
                 if show_help:
                     overlay = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
@@ -169,14 +191,17 @@ class Game:
 
                 self.window.fill((0, 0, 0))
 
-                gameoverscreen = font.render("GAME OVER", True, (255, 50, 50))
+                gameoverscreen = score_num_font.render("GAME OVER", True, (255, 50, 50))
                 self.window.blit(gameoverscreen, gameoverscreen.get_rect(center=(self.width // 2, self.height // 2 - 50)))
 
                 scoreboard = font.render(f"Score: {self.score}", True, (255, 255, 255))
                 self.window.blit(scoreboard, scoreboard.get_rect(center=(self.width // 2, self.height // 2)))
 
+                best = font.render(f"Best: {self.high_score}", True, (255, 215, 0))
+                self.window.blit(best, best.get_rect(center=(self.width // 2, self.height // 2 + 35)))
+
                 hint = small_font.render("Press any key or tap to restart", True, (200, 200, 200))
-                self.window.blit(hint, hint.get_rect(center=(self.width // 2, self.height // 2 + 50)))
+                self.window.blit(hint, hint.get_rect(center=(self.width // 2, self.height // 2 + 80)))
 
                 self.clock.tick(60)
                 pygame.display.update()
